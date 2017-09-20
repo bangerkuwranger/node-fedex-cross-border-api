@@ -65,7 +65,7 @@ var productInfoArray = [
 
 // synchronous call to method
 // we'll log the results to console
-fecbClientSync.ConnectProductInfo(productInfoArray, function(error, result) {
+fecbClientSync.productInfo(productInfoArray, function(error, result) {
 
 	if (error) {
 		console.log("Oh no! \n" + error.message);
@@ -79,7 +79,7 @@ fecbClientSync.ConnectProductInfo(productInfoArray, function(error, result) {
 
 // asynchronous call to method
 // we'll log results to console when promise is resolved or rejected
-var sendProductInfo = fecbClientAsync.ConnectProductInfo(productInfoArray);
+var sendProductInfo = fecbClientAsync.productInfo(productInfoArray);
 sendProductInfo.then(function(result) {
 
 	console.log("Yay, we got stuff! \n" + JSON.stringify(result));
@@ -246,7 +246,78 @@ error | object(JS Error or subclass thereof) | false if no error occurs
 
 ## Methods
 
+Methods for each client are 1:1 matches for the SOAP API methods [documented by FECB](http://crossborder.fedex.com/us/ecommerce/api/index.shtml). Operations for Sync and Async clients are identical.
+
 ### ConnectProductInfo
+
+##### Purpose
+
+Sends product data to FECB to create or update product details in their database.
+
+##### Functions
+
+Synchronous - client.productInfo(request, callback)
+Asynchronous - client.productInfo(request)
+
+##### Request Object Parameters
+
+The 'request' argument for this method is an array of objects, one per product:
+
+```json
+[
+	{
+		"id": "string(255)",
+		"description": "string(250)",
+		"price": "float",
+		"currency": "string(3)",
+		"exportHub": "string(3)",
+		"origin": "string(2)",
+		"itemInformation": {
+			"W": "float",
+			"H": "float",
+			"L": "float",
+			"WT": "float"
+		},
+		"optionalArgs": {
+			"productName": "string(255)",
+			"url": "string(255)",
+			"imageUrl": "string(255)",
+			"hsCode": "string(15)",
+			"eccn": "string(15)",
+			"hazFlag": "boolean",
+			"licenseFlag": "array -OR- comma-separated string (limited to ~84 country codes)",
+			"importFlag": "array -OR- comma-separated string (limited to ~84 country codes)",
+			"productType": "string(255)"
+		} 
+	},
+	{
+	(additional objects, if any)
+	}	
+]
+```
+
+The array must contain at least ONE product object. All object parameters are required except 'optionalArgs', which can, as the name suggests, contain any number of the optional parameters or be omitted entirely. Also, if W, L, and H are defined in the 'itemInformation' object, WT is optional, and vice versa.
+
+##### Arguments Passed to Synchronous Callback
+
+argument | valueType | notes
+:--- | :--- | :---
+error | object(JS Error or subclass thereof) | false if no error occurs
+result | object | by default only has one property, response, which is the server's response parsed into a JS object
+
+##### Arguments Passed to Async resolution function
+
+argument | valueType | notes
+:--- | :--- | :---
+result | object | by default only has one property, response, which is the server's response parsed into a JS object
+
+##### Arguments Passed to Async rejection function
+
+argument | valueType | notes
+:--- | :--- | :---
+error | object(JS Error or subclass thereof) | false if no error occurs
+
+
 
 ### ConnectLandedCost
 
