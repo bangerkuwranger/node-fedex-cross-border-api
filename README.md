@@ -5,7 +5,7 @@ This module is not released or complete and should not be used until this messag
 
 This node module acts as a wrapper for the FedEx Cross Border API, allowing your node applications to consume v4.4 of the SOAP API and perform tasks for fulfilling international shipping for FedEx Cross Border customers.
 
-It features a synchronous client that functions with traditional node style callbacks, and an asynchronous client that uses ECMA 6 style promises. All of the Connect API methods are supported as of release v1.0.0, and details (as well as where objects differ in structure from official FECB docs) are listed below.
+It features client that functions with traditional node style callbacks, and client that uses ECMA 6 style promises. All of the Connect API methods are supported as of release v1.0.0, and details (as well as where objects differ in structure from official FECB docs) are listed below.
 
 ## Purpose
 
@@ -42,19 +42,19 @@ var args = {
 };
 ```
 
-Then you may create either a synchronous client:
+Then you may create either a callback-based client:
 
 ```javascript
-var fecbClientSync = new FedExCrossBorder.client(args);
+var fecbClientCallbacks = new FedExCrossBorder.client(args);
 ```
 
-Or an asynchronous client:
+Or a promise-based client:
 
 ```javascript
-var fecbClientAsync = new FedExCrossBorder.clientAsync(args);
+var fecbClientPromises = new FedExCrossBorder.clientPromise(args);
 ```
 
-Calling a method on the client is pretty straightforward; client methods match the method names in the FECB docs and WSDL file, and your request data is passed in an object as the first argument for each (details for each method/object below). Sync client methods return values via node 'standard' two argument callbacks, and Async client methods, when assigned to a variable, are promises that return data from the API on success. Here's an example of each using the 'ConnectProductInfo':
+Calling a method on the client is pretty straightforward; client methods match the method names in the FECB docs and WSDL file, and your request data is passed in an object as the first argument for each (details for each method/object below). Callback client methods return values via node 'standard' two argument callbacks, and Promise client methods, when assigned to a variable, are promises that return data from the API on success. Here's an example of each using the 'ConnectProductInfo':
 
 ```javascript
 // lets assume we've already created objects for each product here...
@@ -63,9 +63,9 @@ var productInfoArray = [
 	productObject2
 ];
 
-// synchronous call to method
+// call to method using callback client
 // we'll log the results to console
-fecbClientSync.productInfo(productInfoArray, function(error, result) {
+fecbClientCallbacks.productInfo(productInfoArray, function(error, result) {
 
 	if (error) {
 		console.log("Oh no! \n" + error.message);
@@ -77,9 +77,9 @@ fecbClientSync.productInfo(productInfoArray, function(error, result) {
 
 });
 
-// asynchronous call to method
+// call to method using promise client
 // we'll log results to console when promise is resolved or rejected
-var sendProductInfo = fecbClientAsync.productInfo(productInfoArray);
+var sendProductInfo = fecbClientPromises.productInfo(productInfoArray);
 sendProductInfo.then(function(result) {
 
 	console.log("Yay, we got stuff! \n" + JSON.stringify(result));
@@ -95,15 +95,15 @@ sendProductInfo.then(function(result) {
 
 Each constructor's first argument is an object containing properties that define the behavior of the client during method calls. The synchronous client also requires a second argument, the callback function. The 'args' object, as mentioned in the previous section, always requires a 'merchantKey' and a 'language' property. Both are ECMA 6 compliant 'classes' (basically prototypes with class-like syntax), so they are instantiated using the 'new' keyword, with constructor arguments after the class name. Full explanation of the usage for each constructor:
 
-### Synchronous Client Constructor
+### Client Constructor - Callbacks
 
 ##### Function
 
-client(args(object))
+new FedExCrossBorder.client(args(object))
 
 ##### Returns
 
-FedExCBClient
+FedExCBClientCallback Object
 
 ##### Valid Properties for 'args'
 
@@ -114,19 +114,18 @@ merchantKey | string(45) | value provided by FECB
 stripWrapper | boolean | default false
 returnRaw | boolean | default false; only acknowledged if stripWrapper is false
 returnSoapHeader | boolean | default false; only acknowledged if stripWrapper is false
+returnFullResponse | boolean | default false; only acknowledged if stripWrapper is false
 
 
-
-
-### Asynchronous Client Constructor
+### Client Constructor - Promises
 
 ##### Function
 
-clientAsync(args(object))
+new FedExCrossBorder.clientPromise(args(object))
 
 ##### Returns
 
-FedExCBClientAsync Object
+FedExCBClientPromise Object
 
 ##### Valid Properties for 'args'
 
@@ -137,18 +136,19 @@ merchantKey | string(45) | required, value provided by FECB
 stripWrapper | boolean | default false
 returnRaw | boolean | default false; only acknowledged if stripWrapper is false
 returnSoapHeader | boolean | default false; only acknowledged if stripWrapper is false
+returnFullResponse | boolean | default false; only acknowledged if stripWrapper is false
 
 ### Optional Arguments of 'args' for both Constructors
 
 In addition to the the required 'language' and 'merchantKey' properties, the argument object for the client constructors also accepts some optional properties, noted above. These affect how the client's methods return the successful response. 
 
-By default, methods return a result object that contains a single property, response. This property is an object parsed from the server's response to the API call. 
+By default, methods return a result object that contain three properties: body, request, and statusCode. This body is an object parsed from the server's response body to the API call, statusCode is the http status for the response, and request echoes the request JS object sent to the API server. 
 
-For debugging or other logical purposes, the soapHeader or the raw response string can be added to the result object of all methods by setting the 'returnSoapHeader' and/or 'returnRaw' arguments to true, respctively. Setting 'returnSoapHeader' to true adds the 'soapHeader' property to the result object, which contains the soapHeader of the API response. Setting 'returnRaw' to true adds the 'raw' property to the result object, which contains the soapHeader of the API response. Both of these are IN ADDITION to the 'response' property, which is always returned.
+For debugging or other logical purposes, the soapHeader (as JSON), the raw response string, and/or the full response JS object can be added to the result object of all methods by setting the 'returnSoapHeader', 'returnRaw' and/or 'returnFullResponse arguments to true, respctively. Setting 'returnSoapHeader' to true adds the 'soapHeader' property to the result object, which contains a JSON encoded soapHeader of the API response. Setting 'returnRaw' to true adds the 'raw' property to the result object, which contains the raw XML string of the API response body. Setting 'returnFullResponse' adds the 'response' property, a JS object containing the full response from the server as a [Node.js http.IncomingMessage](https://nodejs.org/api/http.html#http_class_http_incomingmessage). Each of these are IN ADDITION to the 'body', 'statusCode', and 'request' properties, which are always returned if 'stripWrapper' is false.
 
-But, if you'd like to go in the opposite direction and return ONLY the response property, without a wrapper, setting the 'stripWrapper' property of 'args' to true will only return the 'response' object without another object wrapping it. This option also disables the effects of 'returnRaw' and 'returnSoapHeader'.
+But, if you'd like to go in the opposite direction and return ONLY the body object, without a wrapper, setting the 'stripWrapper' property of 'args' to true will return the 'body' object without another object wrapping it, and WILL NOT return statusCode or request. This option also disables the effects of 'returnFullResponse', 'returnRaw' and 'returnSoapHeader'.
 
-Examples focus on the Sync client, but the same rules apply for Async as well... except the result is an argument of your promise success handler rather than of the callback.
+Examples focus on the callback based client, but the same rules apply for the promise client as well... except the result is an argument of your promise success handler rather than of the callback.
 
 ##### Examples
 
@@ -162,7 +162,8 @@ var args2 = {
 	"language": "en",
 	"merchantKey": "***myMerchantKeyValue***",
 	"stripWrapper": true
-	// if returnRaw and/or returnSoapHeader are set to true here,
+	// if returnRaw, returnSoapHeader, and/or returnFullResponse 
+	// are set to true here,
 	// they will be ignored
 };
 var args3 = {
@@ -177,45 +178,69 @@ var args4 = {
 	// stripWrapper defaults to false
 	"returnSoapHeader": true
 };
+var args5 = {
+	"language": "en",
+	"merchantKey": "***myMerchantKeyValue***",
+	// stripWrapper defaults to false
+	"returnFullResponse": true
+}
 
 var fecbClientDefault = new FedExCrossBorder.client(args1);
 // methods for this client will return a result object like this:
 // {
-// 	    response: {
-//                 statusCode: 200,
-//                 body: 'your results etc etc'
-//                 etc: etc...
-//      }
+// 	   body: {
+//			property1: 'result1',
+//			etc: etc...
+//     },
+//		request: {
+//			requestprop1: 'prop1',
+//			etc: etc...
+//		},
+//		statusCode: 200
 // }
 
 var fecbClientLean = new FedExCrossBorder.client(args2);
-// methods for this client will only return the response object AS the result:
+// methods for this client will only return the body object AS the result:
 // {
-//    statusCode: 200,
-//    body: 'your results etc etc'
-//    etc: etc...
+//		property1: 'result1',
+//		etc: etc...
 // }
 
 var fecbClientRaw = new FedExCrossBorder.client(args3);
 // methods for this client will return a result object with both raw and response values:
 // {
-// 	    response: {
-//                 statusCode: 200,
-//                 body: 'your results etc etc'
-//                 etc: etc...
-//      },
-// 	    raw: '<xml><statusCode>200</statusCode><body> 'your results etc etc'</body><etc>etc...</etc></xml>'
+// 	   body: {
+//			property1: 'result1',
+//			etc: etc...
+//     },
+//		request: {
+//			requestprop1: 'prop1',
+//			etc: etc...
+//		},
+//		statusCode: 200,
+//		raw:	'<ns1:ConnectProductInfoResponse><return xsi:type="ns1:ConnectProductInfoResponse">
+//				<error xsi:type="xsd:int">0</error><errorMessage xsi:type="xsd:string"></errorMessage>
+//				<errorMessageDetail xsi:type="xsd:string"></errorMessageDetail></return</ns1:ConnectProductInfoResponse>'
 // }
 
 var fecbClientHeaders = new FedExCrossBorder.client(args4);
 // methods for this client will return a result object with both soapHeader and response values:
 // {
-// 	    response: {
-//                 statusCode: 200,
-//                 body: 'your results etc etc'
-//                 etc: etc...
-//      },
-// 	    soapHeader: '<soap><really>probably useful but why</really><etc>etc...</etc></soap>'
+// 	   body: {
+//			property1: 'result1',
+//			etc: etc...
+//     },
+//		request: {
+//			requestprop1: 'prop1',
+//			etc: etc...
+//		},
+//		statusCode: 200,
+//		soapHeader:	'{"xmlns:SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/", 
+//					"xmlns:ns1": "https://api.crossborder.fedex.com/services/v44", 
+//					"xmlns:xsd": "http://www.w3.org/2001/XMLSchema",
+//					"xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+//					"xmlns:SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+//					"SOAP-ENV:encodingStyle": "http://schemas.xmlsoap.org/soap/encoding/"}'
 // }
 
 // IN CASE IT WASN'T OBVIOUS... these are not the actual values the API returns...
@@ -230,23 +255,23 @@ var fecbClientHeaders = new FedExCrossBorder.client(args4);
 argument | valueType | notes
 :--- | :--- | :---
 error | object(JS Error or subclass thereof) | false if no error occurs
-result | object | by default only has one property, response, which is the server's response parsed into a JS object
+result | object | by default contains 'body'(JS Object), 'request'(JS Object), and 'statusCode'(number)
 
-##### Arguments Passed to resolution function
-
-argument | valueType | notes
-:--- | :--- | :---
-result | object | by default only has one property, response, which is the server's response parsed into a JS object
-
-##### Arguments Passed to rejection function
+##### Arguments Passed to Promise resolution function
 
 argument | valueType | notes
 :--- | :--- | :---
-error | object(JS Error or subclass thereof) | false if no error occurs
+result | object | by default contains 'body'(JS Object), 'request'(JS Object), and 'statusCode'(number)
+
+##### Arguments Passed to Promise rejection function
+
+argument | valueType | notes
+:--- | :--- | :---
+error | object(JS Error or subclass thereof) | 
 
 ## Methods
 
-Methods for each client are 1:1 matches for the SOAP API methods [documented by FECB](http://crossborder.fedex.com/us/ecommerce/api/index.shtml). Operations for Sync and Async clients are identical.
+Methods for each client are 1:1 matches for the SOAP API methods [documented by FECB](http://crossborder.fedex.com/us/ecommerce/api/index.shtml), but the function names and arguments have changed from the SOAP equivalents. Operations for both clients are identical, but there's an extra argument for the callback client (for the callback, of course!).
 
 ### ConnectProductInfo
 
@@ -298,24 +323,24 @@ The 'request' argument for this method is an array of objects, one per product:
 
 The array must contain at least ONE product object. All object parameters are required except 'optionalArgs', which can, as the name suggests, contain any number of the optional parameters or be omitted entirely. Also, if W, L, and H are defined in the 'itemInformation' object, WT is optional, and vice versa.
 
-##### Arguments Passed to Synchronous Callback
+##### Arguments Passed to Callback
 
 argument | valueType | notes
 :--- | :--- | :---
 error | object(JS Error or subclass thereof) | false if no error occurs
-result | object | by default only has one property, response, which is the server's response parsed into a JS object
+result | object | by default contains 'body'(JS Object), 'request'(JS Object), and 'statusCode'(number)
 
-##### Arguments Passed to Async resolution function
-
-argument | valueType | notes
-:--- | :--- | :---
-result | object | by default only has one property, response, which is the server's response parsed into a JS object
-
-##### Arguments Passed to Async rejection function
+##### Arguments Passed to Promise resolution function
 
 argument | valueType | notes
 :--- | :--- | :---
-error | object(JS Error or subclass thereof) | false if no error occurs
+result | object | by default contains 'body'(JS Object), 'request'(JS Object), and 'statusCode'(number)
+
+##### Arguments Passed to Promise rejection function
+
+argument | valueType | notes
+:--- | :--- | :---
+error | object(JS Error or subclass thereof) | 
 
 
 
@@ -333,9 +358,17 @@ error | object(JS Error or subclass thereof) | false if no error occurs
 
 Several classes are available to use, with built in validation and some santization as part of the constructor. These are used by the client methods internally, but are exposed for your use as well, if you need them.
 
-### carton
+### cartonDat
+
+### productInfoDat
 
 ### productInfo
+
+### orderInformation
+
+### trackingList
+
+### productsIdDat
 
 ## Functions
 
@@ -349,6 +382,8 @@ Utility functions used by the clients are also exposed for your use, should you 
 
 ### getCountryForHub
 
+### getCarrierCode
+
 ## Constants
 
 If the objects and functions aren't enough, the constants containing various FECB provided tables, as of API v4.4, (also listed in CSV format in the /csv directory of this package) are exposed for direct access, should you need them.
@@ -358,3 +393,5 @@ If the objects and functions aren't enough, the constants containing various FEC
 ### countryCodes
 
 ### languages
+
+### carriers
