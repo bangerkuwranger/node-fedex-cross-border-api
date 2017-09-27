@@ -358,7 +358,28 @@ error | object(JS Error or subclass thereof) |
 
 Several classes are available to use, with built in validation and some santization as part of the constructor. These are used by the client methods internally, but are exposed for your use as well, if you need them.
 
-### cartonDat
+### cartonsDat
+
+##### Purpose
+
+Contains dimensions and/or weight for a carton or item
+
+##### Constructor Function
+
+new FedExCrossBorder.cartonsDat(lengthIn, widthIn, heightIn, weightLb);
+
+##### Constructor Arguments
+
+arguments | valueType | notes
+:--- | :--- | :---
+lengthIn | float(4) | item length in inches
+widthIn | float(4) | item width in inches
+heightIn | float(4) | item height in inches
+weightLb | float(4) | item weight in pounds
+
+##### Methods
+
+getXmlString() - no arguments, returns SOAP formatted XML string of object
 
 ### productInfoDat
 
