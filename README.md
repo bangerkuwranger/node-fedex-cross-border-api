@@ -281,8 +281,9 @@ Sends product data to FECB to create or update product details in their database
 
 ##### Functions
 
-Synchronous - client.productInfo(request, callback)
-Asynchronous - client.productInfo(request)
+Callback - client.productInfo(request, callback)
+
+Promise - client.productInfo(request)
 
 ##### Request Object Parameters
 
@@ -298,10 +299,10 @@ The 'request' argument for this method is an array of objects, one per product:
 		"exportHub": "string(3)",
 		"origin": "string(2)",
 		"itemInformation": {
-			"W": "float",
-			"H": "float",
-			"L": "float",
-			"WT": "float"
+			"w": "float",
+			"h": "float",
+			"l": "float",
+			"wt": "float"
 		},
 		"optionalArgs": {
 			"productName": "string(255)",
@@ -321,7 +322,7 @@ The 'request' argument for this method is an array of objects, one per product:
 ]
 ```
 
-The array must contain at least ONE product object. All object parameters are required except 'optionalArgs', which can, as the name suggests, contain any number of the optional parameters or be omitted entirely. Also, if W, L, and H are defined in the 'itemInformation' object, WT is optional, and vice versa.
+The array must contain at least ONE product object. All object parameters are required except 'optionalArgs', which can, as the name suggests, contain any number of the optional parameters or be omitted entirely. Also, if w, l, and h are defined in the 'itemInformation' object, wt is optional, and vice versa.
 
 ##### Arguments Passed to Callback
 
@@ -341,7 +342,6 @@ result | object | by default contains 'body'(JS Object), 'request'(JS Object), a
 argument | valueType | notes
 :--- | :--- | :---
 error | object(JS Error or subclass thereof) | 
-
 
 
 ### ConnectLandedCost
