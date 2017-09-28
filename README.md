@@ -383,6 +383,48 @@ getXmlString() - no arguments, returns SOAP formatted XML string of object
 
 ### productInfoDat
 
+##### Purpose
+
+Contains product details for updating FECB product database
+
+##### Constructor Function
+
+new FedExCrossBorder.productInfoDat(id, description, price, currency, exportHub, origin, itemInformation, optionalArgs)
+
+##### Constructor Arguments
+
+arguments | valueType | notes
+:--- | :--- | :---
+id | string | unique product identifier
+description | string | human readable product description
+price | float(4) | sales price for item
+currency | string(3) | three letter identifier for item price currency
+exportHub | string(3) | three letter identifier for FECB distribution hub
+origin | string(2) | two letter identifier for product country of origin
+iteminformation | object cartonsDat | physical data for item
+optionalArgs | object | optional; may contain properties matching any of the optionalArgs in the below table.
+
+##### optionalArgs Properties
+
+All properties, like the optionalArgs argument itself, are optional.
+
+property | valueType | notes
+:--- | :--- | :---
+productName | human readable identifier for product
+url | string | URL that points to product on ecommerce site
+imageUrl | string | URL that points to product image
+hsCode | string(10) | code that allows the calculation of tax payable in the destination country of the shipment
+eccn | string(15) | eccn code for product
+hazFlag | boolean | whether product is flagged as hazardous; default false, set to true if product is flagged as hazardous
+importFlag | string -OR- array | comma separated string or array of two letter strings indicating countries product is forbidden to enter
+licenseFlag | string -OR- array | comma separated string or array of two letter strings indicating countries product requires license to enter
+productType | string | merchant category associated with this item
+
+##### Methods
+
+getXmlString() - no arguments, returns SOAP formatted XML string of object
+
+
 ### productInfo
 
 ### orderInformation
