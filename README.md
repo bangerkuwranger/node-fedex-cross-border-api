@@ -97,7 +97,7 @@ Each constructor's first argument is an object containing properties that define
 
 ### Client Constructor - Callbacks
 
-##### Function
+##### Usage
 
 new FedExCrossBorder.client(args(object))
 
@@ -119,7 +119,7 @@ returnFullResponse | boolean | default false; only acknowledged if stripWrapper 
 
 ### Client Constructor - Promises
 
-##### Function
+##### Usage
 
 new FedExCrossBorder.clientPromise(args(object))
 
@@ -279,7 +279,7 @@ Methods for each client are 1:1 matches for the SOAP API methods [documented by 
 
 Sends product data to FECB to create or update product details in their database.
 
-##### Functions
+##### Usage
 
 Callback - client.productInfo(request, callback)
 
@@ -364,7 +364,7 @@ Several classes are available to use, with built in validation and some santizat
 
 Contains dimensions and/or weight for a carton or item
 
-##### Constructor Function
+##### Constructor Usage
 
 new FedExCrossBorder.cartonsDat(lengthIn, widthIn, heightIn, weightLb);
 
@@ -387,7 +387,7 @@ getXmlString() - no arguments, returns SOAP formatted XML string of object
 
 Contains product details for updating FECB product database
 
-##### Constructor Function
+##### Constructor Usage
 
 new FedExCrossBorder.productInfoDat(id, description, price, currency, exportHub, origin, itemInformation, optionalArgs)
 
@@ -397,7 +397,7 @@ arguments | valueType | notes
 :--- | :--- | :---
 id | string | unique product identifier
 description | string | human readable product description
-price | float(4) | sales price for item
+price | float(13,4) | sales price for item
 currency | string(3) | three letter identifier for item price currency
 exportHub | string(3) | three letter identifier for FECB distribution hub
 origin | string(2) | two letter identifier for product country of origin
@@ -410,7 +410,7 @@ All properties, like the optionalArgs argument itself, are optional.
 
 property | valueType | notes
 :--- | :--- | :---
-productName | human readable identifier for product
+productName | string | human readable identifier for product
 url | string | URL that points to product on ecommerce site
 imageUrl | string | URL that points to product image
 hsCode | string(10) | code that allows the calculation of tax payable in the destination country of the shipment
@@ -427,11 +427,103 @@ getXmlString() - no arguments, returns SOAP formatted XML string of object
 
 ### productInfo
 
+##### Purpose
+
+Contains basic product details for landedCost interface
+
+##### Constructor Usage
+
+new FedExCrossBorder.productInfo(id, quantity, price, exportHub);
+
+##### Constructor Arguments
+
+arguments | valueType | notes
+:--- | :--- | :---
+id | string | unique product identifier
+quantity | int | quantity of items in shipment
+price | float(13,4) | sales price for item
+exportHub | string(3) | three letter identifier for FECB distribution hub
+
+##### Methods
+
+getXmlString() - no arguments, returns SOAP formatted XML string of object
+
 ### orderInformation
+
+##### Purpose
+
+Contains line item detail for an FECB order
+
+##### Constructor Usage
+
+new FedExCrossBorder.orderInformation(id, quantity, price, currency, optionalArgs);
+
+##### Constructor Arguments
+
+arguments | valueType | notes
+:--- | :--- | :---
+id | string | unique product identifier
+quantity | int | quantity of items in shipment
+price | float(13,4) | sales price for item
+currency | string(2) | two letter identifier for currency of line item's price
+optionalArgs | object | optional; may contain properties matching any of the optionalArgs in the below table.
+
+##### optionalArgs Properties
+
+All properties, like the optionalArgs argument itself, are optional.
+
+property | valueType | notes
+:--- | :--- | :---
+exportHub | string(3) | three letter identifier for FECB distribution hub
+carrier | string -OR- int | identifier for shipping agent; integers 1-6 or a valid carrier value are accepted (assigns to 6, 'other', by default or if invalid value passed)
+trackingNumber | string(100) | carrier tracking code for order
+
+##### Methods
+
+getXmlString() - no arguments, returns SOAP formatted XML string of object
 
 ### trackingList
 
+##### Purpose
+
+Contains tracking details for orderTrackingUpdate interface
+
+##### Constructor Usage
+
+new FedExCrossBorder.trackingList(id, quantity, trackingNumber, carrier);
+
+##### Constructor Arguments
+
+arguments | valueType | notes
+:--- | :--- | :---
+id | string | unique product identifier
+quantity | int | quantity of items in shipment
+trackingNumber | string(100) | carrier tracking code for order
+carrier | string -OR- int | identifier for shipping agent; integers 1-6 or a valid carrier value are accepted (assigns to 6, 'other', by default or if invalid value passed)
+
+##### Methods
+
+getXmlString() - no arguments, returns SOAP formatted XML string of object
+
 ### productsIdDat
+
+##### Purpose
+
+Contains product id for skuStatus interface
+
+##### Constructor Usage
+
+new FedExCrossBorder.productsIdDat(id);
+
+##### Constructor Arguments
+
+arguments | valueType | notes
+:--- | :--- | :---
+id | string | unique product identifier
+
+##### Methods
+
+getXmlString() - no arguments, returns SOAP formatted XML string of object
 
 ## Functions
 
@@ -439,13 +531,116 @@ Utility functions used by the clients are also exposed for your use, should you 
 
 ### validateLanguage
 
+##### Purpose
+
+Determine whether a string is a valid FECB supported language identifier
+
+##### Usage
+
+FedExCrossBorder.validateLanguage(languageCode);
+
+##### Arguments
+
+arguments | valueType | notes
+:--- | :--- | :---
+languageCode | string(2) | language identifier
+
+##### Returns
+
+(boolean)
+
+true = valid language code
+false = invalid language code
+
 ### validateCountry
+
+##### Purpose
+
+Determine whether a string is a valid FECB supported country identifier
+
+##### Usage
+
+FedExCrossBorder.validateCountry(countryCode);
+
+##### Arguments
+
+arguments | valueType | notes
+:--- | :--- | :---
+countryCode | string(2) | country identifier
+
+##### Returns
+
+(boolean)
+
+true = valid country code
+false = invalid country code
 
 ### validateCurrency
 
+##### Purpose
+
+Determine whether a string is a valid FECB supported currency identifier
+
+##### Usage
+
+FedExCrossBorder.validateCurrency(currencyCode);
+
+##### Arguments
+
+arguments | valueType | notes
+:--- | :--- | :---
+currencyCode | string(3) | currency identifier
+
+##### Returns
+
+(boolean)
+
+true = valid currency code
+false = invalid currency code
+
 ### getCountryForHub
 
+##### Purpose
+
+Given a valid three character facility code string, returns the two character country code the hub facility is located in.
+
+##### Usage
+
+FedExCrossBorder.getCountryForHub(facilityCode);
+
+##### Arguments
+
+arguments | valueType | notes
+:--- | :--- | :---
+facilityCode | string(3) | FECB hub facility identifier
+
+##### Returns
+
+(string(2))
+
+Two letter country code for the given FECB hub facility
+
 ### getCarrierCode
+
+##### Purpose
+
+Given a valid three character facility code string, returns the two character country code the hub facility is located in.
+
+##### Usage
+
+FedExCrossBorder.getCarrierCode(carrierString);
+
+##### Arguments
+
+arguments | valueType | notes
+:--- | :--- | :---
+carrierString | string | String identifying FECB carrier; one of ['UPS', 'FedEx', 'DHL', 'USPS', 'EMS']; case-sensitive
+
+##### Returns
+
+(int(1))
+
+integer between 1-6 inclusive that is related to the given carrierString; returns 6 if string is not matched (for 'Other')
 
 ## Constants
 
@@ -453,8 +648,59 @@ If the objects and functions aren't enough, the constants containing various FEC
 
 ### exportHubs
 
+##### Purpose
+
+Array of objects, each containing a FECB hub facility code and the related country code
+
+##### Structure
+
+[
+	{
+		facility: string(3),
+		country: string(2)
+	},
+	...
+]
+
 ### countryCodes
+
+##### Purpose
+
+Array of objects, each containing a country name, the related country code, and the related currency code
+
+##### Structure
+
+[
+	{
+		name: string,
+		code: string(2),
+		currency: string(3)
+	},
+	...
+]
 
 ### languages
 
+##### Purpose
+
+Array of strings, each containing a FECB supported language identifier
+
+##### Structure
+
+[
+	'languageCode',
+	...
+]
+
 ### carriers
+
+##### Purpose
+
+Object containing a carrier string property that contains the integer identifier for it
+
+##### Structure
+
+{
+	carrier: id,
+	...
+}
