@@ -1,4 +1,4 @@
-'use-strict'
+'use-strict';
 let chai = require('chai');
 chai.should();
 let ClientSync = require('../lib/index').client;
