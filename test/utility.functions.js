@@ -1,6 +1,7 @@
 'use-strict';
 let chai = require('chai');
 chai.should();
+// let should = require('should');
 let util = require('util');
 const Promise = require('bluebird');
 const xml2js = Promise.promisifyAll(require('xml2js'));
@@ -19,6 +20,22 @@ let validCarrierVal = 'FedEx';
 let invalidCarrierVal = 'Federal Express';
 let exampleXmlString = '<request xsi:type="v4:ConnectProductInfoRequest"><language xsi:type="xsd:string">en</language><items xsi:type="v4:ArrayOfProductInfoDat" soapenc:arrayType="v4:ProductInfoDat[]"><item xsi:type="v4:ProductInfoDat"><productID>testItem</productID><description>Item used for Unit Testing</description><price>9.99</price><itemValuationCurrency>USD</itemValuationCurrency><exportHub>TPA</exportHub><countryOfOrigin>US</countryOfOrigin><itemInformation xsi:type="v4:CartonsDat"><l xsi:nil="true"></l><w xsi:nil="true"></w><h xsi:nil="true"></h><wt xsi:nil="true"></wt></itemInformation><productName>Test Item</productName><url>https://www.teststore.com/products/testitem</url><hazFlag>0</hazFlag></item><item xsi:type="v4:ProductInfoDat"><productID>testItem2</productID><description>Item used for Unit Testing</description><price>9.99</price><itemValuationCurrency>USD</itemValuationCurrency><exportHub>TPA</exportHub><countryOfOrigin>US</countryOfOrigin><itemInformation xsi:type="v4:CartonsDat"><l xsi:nil="true"></l><w xsi:nil="true"></w><h xsi:nil="true"></h><wt xsi:nil="true"></wt></itemInformation><productName>Test Item</productName><url>https://www.teststore.com/products/testitem2</url><hazFlag>0</hazFlag></item></items></request>';
 let exampleXmlString2 = '<response xsi:type="v4:ConnectSkuStatusResponse"><error xsi:type="xsd:int">0</error><errorMessage xsi:type="xsd:string" /><items xsi:type="v4:ArrayOfSkuStatusDat"><item xsi:type="SkuStatusDat"><productID xsi:type="xsd:string">testItem</productID><skuHsCode xsi:type="xsd:int">444</skuHsCode><productStatus xsi:type="xsd:int">0</productStatus></item><item xsi:type="SkuStatusDat"><productID xsi:type="xsd:string">testItem2</productID><skuHsCode xsi:type="xsd:int">555</skuHsCode><productStatus xsi:type="xsd:int">1</productStatus></item></items></response>';
+let testSourceObject = {
+  a: 'apple',
+  b: true,
+  c: 'USD',
+  d: 14.0100,
+  e: 0
+};
+let testTargetObject = {};
+let testSetPropertyMap = {
+  a: 'string',
+  b: 'boolean',
+  c: 'validCurrency',
+  d: 'float4',
+  e: 'int',
+  f: 'csvStringCountry'
+};
 
 describe('exportedFunctions', function() {
 
@@ -263,19 +280,88 @@ describe('exportedFunctions', function() {
 
   describe('#setPropertyIf', function() {
 
-    it('should throw a TypeError if the source is not an object');
+    it('should throw a TypeError if the source is not an object', function() {
 
-    it('should throw a TypeError if the target is not an object');
+      libToTest.testFunctions.setPropertyIf.bind('testSourceObject', testTargetObject, 'a', testSetPropertyMap.a).should.throw(TypeError, 'invalid');
 
-    it('should throw a TypeError if the property name is not a string');
+    });
 
-    it('should call the correct test if passed testVal');
+    it('should throw a TypeError if the target is not an object', function() {
 
-    it('should default to the "exists" test if testVal invalid or not given');
+      libToTest.testFunctions.setPropertyIf.bind(testSourceObject, 'testTargetObject', 'a', testSetPropertyMap.a).should.throw(TypeError, 'invalid');
 
-    it('should set the target\'s property to the source\'s value');
+    });
 
-    it('should set the target\'s property to the given default value if the source value is not set.');
+    it('should throw a TypeError if the property name is not a string', function() {
+
+      libToTest.testFunctions.setPropertyIf.bind(testSourceObject, testTargetObject, 0, testSetPropertyMap.a).should.throw(TypeError, 'invalid');
+
+    });
+
+    it('should call the correct test if passed testVal', function() {
+
+      libToTest.testFunctions.setPropertyIf(testSourceObject, testTargetObject, 'a', testSetPropertyMap.a).should.equal('apple');
+      libToTest.testFunctions.setPropertyIf(testSourceObject, testTargetObject, 'a', testSetPropertyMap.e).should.equal(false);
+      libToTest.testFunctions.setPropertyIf(testSourceObject, testTargetObject, 'b', testSetPropertyMap.b).should.equal(true);
+      libToTest.testFunctions.setPropertyIf(testSourceObject, testTargetObject, 'b', testSetPropertyMap.e).should.equal(false);
+      libToTest.testFunctions.setPropertyIf(testSourceObject, testTargetObject, 'c', testSetPropertyMap.c).should.equal('USD');
+      libToTest.testFunctions.setPropertyIf(testSourceObject, testTargetObject, 'c', testSetPropertyMap.e).should.equal(false);
+      libToTest.testFunctions.setPropertyIf(testSourceObject, testTargetObject, 'd', testSetPropertyMap.d).should.equal((14.0100).toFixed(4));
+      libToTest.testFunctions.setPropertyIf(testSourceObject, testTargetObject, 'd', testSetPropertyMap.a).should.equal(false);
+      libToTest.testFunctions.setPropertyIf(testSourceObject, testTargetObject, 'e', testSetPropertyMap.e).should.equal(0);
+      libToTest.testFunctions.setPropertyIf(testSourceObject, testTargetObject, 'e', testSetPropertyMap.a).should.equal(false);
+
+    });
+
+    it('should default to the "exists" test if testVal invalid or not given', function() {
+
+      libToTest.testFunctions.setPropertyIf(testSourceObject, testTargetObject, 'a').should.equal('apple');
+      libToTest.testFunctions.setPropertyIf(testSourceObject, testTargetObject, 'f').should.equal(false);
+
+    });
+
+    it('should set the target\'s property to the source\'s value', function() {
+
+      for (propName in testSetPropertyMap) {
+
+        if (testSetPropertyMap.hasOwnProperty(propName)) {
+
+          libToTest.testFunctions.setPropertyIf(testSourceObject, testTargetObject, propName, testSetPropertyMap[propName]);
+
+        }
+
+      }
+      testTargetObject.a.should.equal(testSourceObject.a);
+      testTargetObject.b.should.equal(testSourceObject.b);
+      testTargetObject.c.should.equal(testSourceObject.c);
+      testTargetObject.d.should.equal(testSourceObject.d.toFixed(4));
+      testTargetObject.e.should.equal(testSourceObject.e);
+      (typeof testTargetObject.f).should.be.equal('undefined');
+
+    });
+
+    it('should set the target\'s property to the given default value if the source value is not set.', function() {
+
+      delete testSourceObject.a;
+      let testDefault = 'US,DE';
+      for (propName in testSetPropertyMap) {
+
+        if (testSetPropertyMap.hasOwnProperty(propName)) {
+
+          libToTest.testFunctions.setPropertyIf(testSourceObject, testTargetObject, propName, testSetPropertyMap[propName], testDefault);
+
+        }
+
+      }
+      console.log(testTargetObject);
+      testTargetObject.a.should.equal(testDefault);
+      testTargetObject.b.should.equal(testSourceObject.b);
+      testTargetObject.c.should.equal(testSourceObject.c);
+      testTargetObject.d.should.equal(testSourceObject.d.toFixed(4));
+      testTargetObject.e.should.equal(testSourceObject.e);
+      testTargetObject.f.should.equal(testDefault);
+
+    });
 
   });
 
