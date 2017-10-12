@@ -17,7 +17,8 @@ let validHubVal = 'TPA';
 let invalidHubVal = 'TPC';
 let validCarrierVal = 'FedEx';
 let invalidCarrierVal = 'Federal Express';
-let exampleXmlString = '<request xsi:type="v4:ConnectProductInfoRequest"><language xsi:type="xsd:string">en</language><items xsi:type="v4:ArrayOfProductInfoDat" soapenc:arrayType="v4:ProductInfoDat[]"><item xsi:type="v4:ProductInfoDat"><productID>testItem</productID><description>Item used for Unit Testing</description><price>9.99</price><itemValuationCurrency>USD</itemValuationCurrency><itemExportHubCountry>US</itemExportHubCountry><countryOfOrigin>US</countryOfOrigin><itemInformation xsi:type="v4:CartonsDat"><l xsi:nil="true"></l><w xsi:nil="true"></w><h xsi:nil="true"></h><wt xsi:nil="true"></wt></itemInformation><productName>Test Item</productName><url>https://www.teststore.com/products/testitem</url><hazFlag>0</hazFlag></item><item xsi:type="v4:ProductInfoDat"><productID>testItem2</productID><description>Item used for Unit Testing</description><price>9.99</price><itemValuationCurrency>USD</itemValuationCurrency><itemExportHubCountry>US</itemExportHubCountry><countryOfOrigin>US</countryOfOrigin><itemInformation xsi:type="v4:CartonsDat"><l xsi:nil="true"></l><w xsi:nil="true"></w><h xsi:nil="true"></h><wt xsi:nil="true"></wt></itemInformation><productName>Test Item</productName><url>https://www.teststore.com/products/testitem2</url><hazFlag>0</hazFlag></item></items></request>'
+let exampleXmlString = '<request xsi:type="v4:ConnectProductInfoRequest"><language xsi:type="xsd:string">en</language><items xsi:type="v4:ArrayOfProductInfoDat" soapenc:arrayType="v4:ProductInfoDat[]"><item xsi:type="v4:ProductInfoDat"><productID>testItem</productID><description>Item used for Unit Testing</description><price>9.99</price><itemValuationCurrency>USD</itemValuationCurrency><exportHub>TPA</exportHub><countryOfOrigin>US</countryOfOrigin><itemInformation xsi:type="v4:CartonsDat"><l xsi:nil="true"></l><w xsi:nil="true"></w><h xsi:nil="true"></h><wt xsi:nil="true"></wt></itemInformation><productName>Test Item</productName><url>https://www.teststore.com/products/testitem</url><hazFlag>0</hazFlag></item><item xsi:type="v4:ProductInfoDat"><productID>testItem2</productID><description>Item used for Unit Testing</description><price>9.99</price><itemValuationCurrency>USD</itemValuationCurrency><exportHub>TPA</exportHub><countryOfOrigin>US</countryOfOrigin><itemInformation xsi:type="v4:CartonsDat"><l xsi:nil="true"></l><w xsi:nil="true"></w><h xsi:nil="true"></h><wt xsi:nil="true"></wt></itemInformation><productName>Test Item</productName><url>https://www.teststore.com/products/testitem2</url><hazFlag>0</hazFlag></item></items></request>';
+let exampleXmlString2 = '<response xsi:type="v4:ConnectSkuStatusResponse"><error xsi:type="xsd:int">0</error><errorMessage xsi:type="xsd:string" /><items xsi:type="v4:ArrayOfSkuStatusDat"><item xsi:type="SkuStatusDat"><productID xsi:type="xsd:string">testItem</productID><skuHsCode xsi:type="xsd:int">444</skuHsCode><productStatus xsi:type="xsd:int">0</productStatus></item><item xsi:type="SkuStatusDat"><productID xsi:type="xsd:string">testItem2</productID><skuHsCode xsi:type="xsd:int">555</skuHsCode><productStatus xsi:type="xsd:int">1</productStatus></item></items></response>';
 
 describe('exportedFunctions', function() {
 
@@ -190,11 +191,73 @@ describe('exportedFunctions', function() {
 
   describe('#xmlObjectNodeArray', function() {
 
-    it('should return the an array of objects using the class constructor passed to it');
+    it('should return the an array of objects using the class constructor passed to it', function(done) {
 
-    it('should return an array of generic objects if no class constructor is passed to it');
+      Parser.parseString(exampleXmlString2, function(error, parsedXml) {
 
-    it('should return the argument without changes if the argument is not an array');
+        if (error) {
+
+          done(error);
+
+        }
+        else {
+
+          let xmlArrayVal = libToTest.testFunctions.xmlObjectNodeArray(parsedXml.response.items.item, libToTest.testClasses.SkuStatusDat);
+          xmlArrayVal.should.be.an('array');
+          xmlArrayVal.length.should.equal(2);
+          xmlArrayVal[0].should.be.an.instanceof(libToTest.testClasses.SkuStatusDat);
+          xmlArrayVal[1].should.be.an.instanceof(libToTest.testClasses.SkuStatusDat);
+          done();
+        }
+
+      });
+
+    });
+
+    it('should return an array of generic objects if no class constructor is passed to it', function(done) {
+
+      Parser.parseString(exampleXmlString2, function(error, parsedXml) {
+
+        if (error) {
+
+          done(error);
+
+        }
+        else {
+
+          let xmlArrayVal = libToTest.testFunctions.xmlObjectNodeArray(parsedXml.response.items.item);
+          xmlArrayVal.should.be.an('array');
+          xmlArrayVal.length.should.equal(2);
+          xmlArrayVal[0].should.not.be.an.instanceof(libToTest.testClasses.SkuStatusDat);
+          xmlArrayVal[1].should.not.be.an.instanceof(libToTest.testClasses.SkuStatusDat);
+          done();
+        }
+
+      });
+
+    });
+
+    it('should return the argument without changes if the argument is not an array', function(done) {
+
+      Parser.parseString(exampleXmlString2, function(error, parsedXml) {
+
+        if (error) {
+
+          done(error);
+
+        }
+        else {
+
+          let xmlArrayVal = libToTest.testFunctions.xmlObjectNodeArray(parsedXml.response);
+          xmlArrayVal.should.equal(parsedXml.response);
+          xmlArrayVal.should.be.an('object');
+          xmlArrayVal.should.not.be.an('array');
+          done();
+        }
+
+      });
+
+    });
 
   });
 
