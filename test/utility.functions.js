@@ -129,6 +129,10 @@ describe('exportedFunctions', function() {
 
   });
 
+});
+
+describe('nonExportedFunctions', function() {
+
   describe('#getConstructorArgNames', function() {
 
     it('should return an array of argument names given an object\'s constructor', function() {
@@ -353,7 +357,6 @@ describe('exportedFunctions', function() {
         }
 
       }
-      console.log(testTargetObject);
       testTargetObject.a.should.equal(testDefault);
       testTargetObject.b.should.equal(testSourceObject.b);
       testTargetObject.c.should.equal(testSourceObject.c);
